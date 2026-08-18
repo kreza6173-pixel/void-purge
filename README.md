@@ -24,14 +24,6 @@ Then in Shevery → ADB Modules → Install ZIP → pick this file.
 - [✅] (Root devices) Run Corpse Finder, manually verify results are genuinely uninstalled apps
 - [✅] (Root devices) Clear one app's cache, reopen that app, confirm it doesn't crash (only cache was cleared, not config)
 
-## Publishing to the Shevery catalog
-
-1. Create a new public GitHub repo dedicated to this module
-2. Push the contents of this folder (`module.prop`, `action.sh`, `webui/`, `LICENSE`) to the repo root
-3. In repo Settings → Topics, add: `shevery-modules`
-4. (Recommended) Create a GitHub Release with `void-purge.zip` as an asset so the "Install ZIP" button and auto-update checks work
-5. Keep the `id` (`void-purge`) unique before publishing — if it's already taken, rename it
-
 ## Why it's built this way
 
 - **Cache cleanup uses `pm trim-caches`**, not manual `rm -rf` — the only official, permitted method that works both under plain ADB shell and root, without risking a running app.
