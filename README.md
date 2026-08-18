@@ -15,14 +15,14 @@ Then in Shevery → ADB Modules → Install ZIP → pick this file.
 
 ## Pre-publish checklist
 
-- [ ] Bridge status badge at the top shows ✓ green
-- [ ] Tap "Clear cache", check the debug console output at the bottom
-- [ ] Tap "Scan orphaned files" — verify the list really belongs to uninstalled apps, not installed ones
-- [ ] Create a test duplicate file (`cp file1.txt Download/file2.txt`) and confirm the duplicate scanner detects it correctly
-- [ ] Test "Kill background apps" with an empty exclude list, confirm Shevery itself (`com.hamondev.shevery`) is not killed
-- [ ] Test every scan-scope field with an empty value or `/` — it should be rejected (safety guard)
-- [ ] (Root devices) Run Corpse Finder, manually verify results are genuinely uninstalled apps
-- [ ] (Root devices) Clear one app's cache, reopen that app, confirm it doesn't crash (only cache was cleared, not config)
+- [✅] Bridge status badge at the top shows ✓ green
+- [✅] Tap "Clear cache", check the debug console output at the bottom
+- [✅] Tap "Scan orphaned files" — verify the list really belongs to uninstalled apps, not installed ones
+- [✅] Create a test duplicate file (`cp file1.txt Download/file2.txt`) and confirm the duplicate scanner detects it correctly
+- [✅] Test "Kill background apps" with an empty exclude list, confirm Shevery itself (`com.hamondev.shevery`) is not killed
+- [✅] Test every scan-scope field with an empty value or `/` — it should be rejected (safety guard)
+- [✅] (Root devices) Run Corpse Finder, manually verify results are genuinely uninstalled apps
+- [✅] (Root devices) Clear one app's cache, reopen that app, confirm it doesn't crash (only cache was cleared, not config)
 
 ## Publishing to the Shevery catalog
 
