@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>VOID//PURGE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070d; --cyan:#00f0ff; --magenta:#ff2bd6; --purple:#8b3cff; --red:#ff4d6d; --green:#4dffb0; --yellow:#e8ff3c;
+  --text:#dbe4ff; --text-dim:#7480a8;
+  --border:rgba(0,240,255,.20); --border-strong:rgba(0,240,255,.5);
+  --mono:'Share Tech Mono', monospace; --sans:'Rajdhani', sans-serif;
+}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;min-height:100vh;padding-bottom:30px;}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 45% 30% at 15% 0%, rgba(139,60,255,.22), transparent 60%),
+             radial-gradient(ellipse 45% 30% at 90% 8%, rgba(255,43,109,.14), transparent 60%);}
+
+header{position:relative;z-index:2;position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:12px 14px;background:#0a0a13;border-bottom:1px solid var(--border);}
+.brand .dot{width:9px;height:9px;border-radius:2px;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s infinite;flex:none;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.brand b{font-family:var(--mono);font-size:14px;letter-spacing:1px;}
+#bridgeStatus{margin-inline-start:auto;font-family:var(--mono);font-size:10px;padding:5px 9px;border-radius:4px;flex:none;}
+#bridgeStatus.ok{color:var(--green);background:rgba(77,255,176,.1);border:1px solid rgba(77,255,176,.4);}
+#bridgeStatus.bad{color:var(--red);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.4);}
+#rootStatus{font-family:var(--mono);font-size:10px;padding:5px 9px;border-radius:4px;flex:none;margin-inline-start:6px;
+  color:var(--purple);background:rgba(139,60,255,.12);border:1px solid rgba(139,60,255,.5);}
+
+#bridgeWarning{position:relative;z-index:2;margin:12px 14px;padding:14px;border:1px solid var(--red);background:rgba(255,77,109,.07);border-radius:8px;font-size:13.5px;display:none;}
+#bridgeWarning b{color:var(--red);}
+
+main{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px;}
+.card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.card-head .icon{font-size:20px;flex:none;}
+.card-head h3{margin:0;font-size:16.5px;flex:1;}
+.card-head .badge{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:3px;background:rgba(0,240,255,.08);color:var(--cyan);border:1px solid var(--border);flex:none;}
+.card p.desc{font-size:13px;color:var(--text-dim);margin:4px 0 12px;}
+
+.row{display:flex;gap:8px;flex-wrap:wrap;}
+button{
+  font-family:var(--sans);font-weight:600;font-size:14.5px;border:none;border-radius:7px;padding:11px 16px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--cyan);color:#03151a;}
+.btn-danger{background:var(--red);color:#1a0508;}
+.btn-ghost{background:transparent;border:1px solid var(--border-strong);color:var(--cyan);font-weight:500;}
+.btn-ghost.danger{border-color:var(--red);color:var(--red);}
+button:disabled{opacity:.35;pointer-events:none;}
+button.loading::after{content:'';width:12px;height:12px;border:2px solid rgba(0,0,0,.3);border-top-color:currentColor;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+input[type=text]{
+  width:100%;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;font-family:var(--mono);font-size:14px;margin:6px 0;
+}
+label.field-label{display:block;font-size:12px;color:var(--text-dim);margin-top:8px;}
+
+.result-box{margin-top:12px;border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.result-summary{padding:10px 12px;font-size:13px;background:rgba(255,255,255,.02);color:var(--text-dim);}
+.result-list{max-height:240px;overflow-y:auto;}
+.result-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--border);font-size:12.5px;}
+.result-item .path{flex:1;word-break:break-all;color:var(--text);font-family:var(--mono);font-size:11px;}
+.result-item .size{flex:none;color:var(--text-dim);font-family:var(--mono);font-size:10.5px;}
+.result-item input[type=checkbox]{width:16px;height:16px;flex:none;accent-color:var(--cyan);}
+.dup-group{border-top:1px solid var(--border-strong);padding:8px 0 2px;}
+.dup-group .grouplabel{font-family:var(--mono);font-size:10px;color:var(--magenta);padding:4px 12px;}
+
+.empty-note{padding:14px;text-align:center;color:var(--text-dim);font-size:13px;}
+.warn-inline{font-size:12px;color:var(--yellow);margin-top:8px;}
+.err-inline{font-size:12.5px;color:var(--red);margin-top:8px;}
+
+#console{position:relative;z-index:1;max-width:640px;margin:0 auto 20px;padding:0 14px;}
+#console .box{background:#020207;border:1px solid var(--border);border-radius:8px;padding:12px;max-height:180px;overflow-y:auto;
+  font-family:var(--mono);font-size:11px;color:#8bffe0;white-space:pre-wrap;word-break:break-all;}
+#console h4{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--text-dim);margin:0 0 6px;}
+
+::selection{background:var(--magenta);color:#fff;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<header>
+  <div class="brand" style="display:flex;align-items:center;gap:8px;">
+    <span class="dot"></span><b>VOID//PURGE</b>
+  </div>
+  <span id="bridgeStatus">checking…</span>
+  <span id="rootStatus" style="display:none;"></span>
+</header>
+
+<div id="bridgeWarning">
+  <b>⚠ Shell access is disabled.</b><br>
+  In Shevery's module settings, set access mode to <b>Full access</b>, or in <b>Custom</b> mode enable
+  <b>WebUI shell bridge</b>. Without this, none of the buttons on this page will work.
+</div>
+
+<main id="app">
+
+  <!-- CACHE -->
+  <div class="card">
+    <div class="card-head"><span class="icon">🧹</span><h3>App Cache Cleanup</h3><span class="badge">SAFE</span></div>
+    <p class="desc">Uses the official, safe <code>pm trim-caches</code> command — the same mechanism Android itself runs when storage is low. App data stays untouched, only cache is cleared.</p>
+    <div class="row"><button class="btn-primary" id="btnTrimCache">Clear cache for all apps</button></div>
+    <div class="result-box" id="cacheResult" style="display:none;"></div>
+  </div>
+
+  <!-- ORPHANS -->
+  <div class="card">
+    <div class="card-head"><span class="icon">👻</span><h3>Orphaned Files (uninstalled apps)</h3><span class="badge">SCAN → CONFIRM</span></div>
+    <p class="desc">Leftover folders in <code>Android/data</code> and <code>Android/obb</code> that no longer belong to any currently installed app.</p>
+    <div class="row">
+      <button class="btn-ghost" id="btnScanOrphans">🔍 Scan</button>
+      <button class="btn-danger" id="btnDeleteOrphans" style="display:none;">Delete selected</button>
+    </div>
+    <div class="result-box" id="orphanResult" style="display:none;"></div>
+  </div>
+
+  <!-- EMPTY FOLDERS -->
+  <div class="card">
+    <div class="card-head"><span class="icon">📂</span><h3>Empty Folders</h3><span class="badge">SCAN → CONFIRM</span></div>
+    <label class="field-label">Scan scope</label>
+    <input type="text" id="emptyScope" value="/sdcard/Android">
+    <div class="row">
+      <button class="btn-ghost" id="btnScanEmpty">🔍 Scan</button>
+      <button class="btn-danger" id="btnDeleteEmpty" style="display:none;">Delete selected</button>
+    </div>
+    <div class="result-box" id="emptyResult" style="display:none;"></div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="card">
+    <div class="card-head"><span class="icon">📄</span><h3>Log Files</h3><span class="badge">SCAN → CONFIRM</span></div>
+    <label class="field-label">Scan scope</label>
+    <input type="text" id="logScope" value="/sdcard/Android">
+    <div class="row">
+      <button class="btn-ghost" id="btnScanLogs">🔍 Scan (*.log, *.trace, crash*.txt)</button>
+      <button class="btn-danger" id="btnDeleteLogs" style="display:none;">Delete selected</button>
+    </div>
+    <div class="result-box" id="logResult" style="display:none;"></div>
+  </div>
+
+  <!-- DUPLICATES -->
+  <div class="card">
+    <div class="card-head"><span class="icon">🧬</span><h3>Duplicate Files</h3><span class="badge">SCAN → CONFIRM</span></div>
+    <p class="desc">Compares files by content hash, not just name. Scan is capped at 1200 files per run so it can never hang the UI — narrow the scope for large folders.</p>
+    <label class="field-label">Scan scope</label>
+    <input type="text" id="dupScope" value="/sdcard/Download">
+    <div class="row">
+      <button class="btn-ghost" id="btnScanDup">🔍 Scan</button>
+      <button class="btn-danger" id="btnDeleteDup" style="display:none;">Delete selected</button>
+    </div>
+    <div class="result-box" id="dupResult" style="display:none;"></div>
+  </div>
+
+  <!-- KILL APPS -->
+  <div class="card">
+    <div class="card-head"><span class="icon">💀</span><h3>Kill Background Apps</h3><span class="badge">ONE-CLICK</span></div>
+    <p class="desc">Force-stops every third-party (user-installed) app — running or not. System apps and anything listed below are left untouched.</p>
+    <label class="field-label">Excluded packages (comma-separated)</label>
+    <input type="text" id="killExclude" value="com.hamondev.shevery">
+    <div class="row"><button class="btn-danger" id="btnKillApps">💀 Kill all third-party apps</button></div>
+    <div class="result-box" id="killResult" style="display:none;"></div>
+  </div>
+
+  <!-- ROOT ADVANCED SECTION (hidden unless root detected + user confirms) -->
+  <div class="card" id="rootGateCard" style="display:none;border-color:var(--purple);">
+    <div class="card-head"><span class="icon">🔓</span><h3>Advanced (root only)</h3><span class="badge" style="color:var(--purple);border-color:var(--purple);">ROOT</span></div>
+    <p class="desc">Root was detected on this device. This section reaches into internal system paths (<code>/data</code>) —
+      more powerful, but more sensitive. Only operations that are <b>genuinely safe</b> (precise cache, diagnostic logs,
+      truly-uninstalled app data) are included; nothing here ever wipes a whole app's data or touches critical system files.</p>
+    <div class="row"><button class="btn-ghost" id="btnUnlockRoot" style="border-color:var(--purple);color:var(--purple);">🔓 Show &amp; acknowledge risk</button></div>
+  </div>
+
+  <div id="rootSection" style="display:none;">
+
+    <!-- ROOT: deep corpse finder -->
+    <div class="card" style="border-color:var(--purple);">
+      <div class="card-head"><span class="icon">☠️</span><h3>Full Leftover App Data (Corpse Finder)</h3><span class="badge" style="color:var(--purple);border-color:var(--purple);">ROOT</span></div>
+      <p class="desc">Unlike the "Orphaned Files" card above (which only sees sdcard), this reaches into <code>/data/user/0</code> —
+        where real leftover data (not just cache) from uninstalled apps lives, and which even non-root cleaners can't see.
+        Only folders whose name matches a real package-id format (<code>com.example.app</code>) and aren't in the installed list are shown.</p>
+      <div class="row">
+        <button class="btn-ghost" id="btnScanCorpse">🔍 Scan</button>
+        <button class="btn-danger" id="btnDeleteCorpse" style="display:none;">Delete selected</button>
+      </div>
+      <div class="result-box" id="corpseResult" style="display:none;"></div>
+    </div>
+
+    <!-- ROOT: precise per-app cache -->
+    <div class="card" style="border-color:var(--purple);">
+      <div class="card-head"><span class="icon">📦</span><h3>Precise Per-App Cache (selective)</h3><span class="badge" style="color:var(--purple);border-color:var(--purple);">ROOT</span></div>
+      <p class="desc">Instead of blindly trusting the system, this shows the exact cache size per app and lets you pick which ones to clear.
+        Only the <b>contents</b> of the <code>cache</code>/<code>code_cache</code> folders are removed — never the folder itself, never anything else.</p>
+      <div class="row"><button class="btn-ghost" id="btnScanAppCache">🔍 Scan top 30 by size</button></div>
+      <div class="result-box" id="appCacheResult" style="display:none;"></div>
+    </div>
+
+    <!-- ROOT: system diagnostic logs -->
+    <div class="card" style="border-color:var(--purple);">
+      <div class="card-head"><span class="icon">🩹</span><h3>System Diagnostic Logs (ANR/Tombstone)</h3><span class="badge" style="color:var(--purple);border-color:var(--purple);">ROOT</span></div>
+      <p class="desc"><code>/data/anr</code> and <code>/data/tombstones</code> are just crash/freeze reports for debugging — no app depends on them.
+        Clearing them is always safe and sometimes frees hundreds of MB.</p>
+      <div class="row"><button class="btn-primary" id="btnCleanDiagLogs">Clear diagnostic logs</button></div>
+      <div class="result-box" id="diagResult" style="display:none;"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<div id="console">
+  <h4>// raw output of the last operation (debug)</h4>
+  <div class="box" id="consoleBox">Ready.</div>
+</div>
+
+<script>
+// ===================== helpers =====================
+function shQuote(s){
+  return "'" + String(s).replace(/'/g, "'\\''") + "'";
+}
+function logConsole(text){
+  document.getElementById('consoleBox').textContent = text || '(empty output)';
+}
+function fmtSize(kb){
+  kb = Number(kb) || 0;
+  if (kb < 1024) return kb + ' KB';
+  if (kb < 1024*1024) return (kb/1024).toFixed(1) + ' MB';
+  return (kb/1024/1024).toFixed(2) + ' GB';
+}
+// hard safety denylist — never allow these as delete targets even if a bug produces them
+const DENY_PATHS = new Set(['', '/', '/sdcard', '/storage/emulated/0', '/data', '/system']);
+function isSafePath(p){
+  if (!p) return false;
+  const norm = p.replace(/\/+$/, '');
+  return !DENY_PATHS.has(norm) && norm.startsWith('/');
+}
+
+function runShell(cmd, timeoutSeconds){
+  try {
+    const json = window.Shizuku.execWithOptions(cmd, JSON.stringify({ timeoutSeconds: timeoutSeconds || 60 }));
+    const res = JSON.parse(json);
+    logConsole((res.stdout||'') + (res.stderr ? '\n[stderr]\n'+res.stderr : ''));
+    return res;
+  } catch(e){
+    logConsole('bridge error: ' + e);
+    return { ok:false, stdout:'', stderr:String(e), exitCode:-1, timedOut:false };
+  }
+}
+
+async function withBusy(btn, fn){
+  const orig = btn.textContent;
+  btn.disabled = true; btn.classList.add('loading');
+  try { await fn(); }
+  finally { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = orig; }
+}
+
+// ===================== bridge status =====================
+function checkBridge(){
+  const statusEl = document.getElementById('bridgeStatus');
+  const warnEl = document.getElementById('bridgeWarning');
+  try {
+    const info = JSON.parse(window.Shizuku.getModuleInfo());
+    if (!info.enabled) { statusEl.textContent = 'module disabled'; statusEl.className = 'bad'; warnEl.style.display = 'block'; return false; }
+    const test = window.Shizuku.exec('echo ok');
+    const r = JSON.parse(test);
+    if (r.ok) { statusEl.textContent = '✓ connected (' + info.accessMode + ')'; statusEl.className = 'ok'; warnEl.style.display = 'none'; return true; }
+    statusEl.textContent = 'shell access disabled'; statusEl.className = 'bad'; warnEl.style.display = 'block'; return false;
+  } catch(e){
+    statusEl.textContent = 'error: ' + e; statusEl.className = 'bad'; warnEl.style.display = 'block'; return false;
+  }
+}
+
+// ===================== 1. cache trim =====================
+document.getElementById('btnTrimCache').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const res = runShell('pm trim-caches 999999999999', 60);
+    const box = document.getElementById('cacheResult');
+    box.style.display = 'block';
+    box.innerHTML = res.ok
+      ? '<div class="result-summary">✓ Cache cleanup completed successfully by the system.</div>'
+      : '<div class="result-summary err-inline">Error: ' + (res.stderr || 'exit ' + res.exitCode) + '</div>';
+  });
+});
+
+// ===================== 2. orphan folders =====================
+let orphanCandidates = [];
+document.getElementById('btnScanOrphans').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const pkgs = runShell('pm list packages | sed "s/^package://"', 30);
+    const installed = new Set((pkgs.stdout||'').split('\n').map(s=>s.trim()).filter(Boolean));
+
+    const dataDirs = runShell(
+      'for d in /sdcard/Android/data/*/ /sdcard/Android/obb/*/; do [ -d "$d" ] && echo "$d|$(du -sk "$d" 2>/dev/null | cut -f1)"; done',
+      60
+    );
+    const lines = (dataDirs.stdout||'').split('\n').filter(Boolean);
+    orphanCandidates = [];
+    for (const line of lines){
+      const [path, kb] = line.split('|');
+      if (!path) continue;
+      const clean = path.replace(/\/+$/, '');
+      const pkgName = clean.split('/').pop();
+      if (!installed.has(pkgName) && isSafePath(clean)) {
+        orphanCandidates.push({ path: clean, kb: parseInt(kb)||0 });
+      }
+    }
+    renderScanList('orphanResult', orphanCandidates, 'btnDeleteOrphans', 'No orphaned files found ✓');
+  });
+});
+document.getElementById('btnDeleteOrphans').addEventListener('click', async function(){
+  await deleteSelected(this, 'orphanResult');
+});
+
+// ===================== 3. empty folders =====================
+let emptyCandidates = [];
+document.getElementById('btnScanEmpty').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const scope = document.getElementById('emptyScope').value.trim();
+    if (!isSafePath(scope)) { alert('Invalid or too broad a path — give a specific subfolder.'); return; }
+    const res = runShell('find ' + shQuote(scope) + ' -type d -empty 2>/dev/null', 60);
+    const lines = (res.stdout||'').split('\n').filter(Boolean).filter(isSafePath);
+    emptyCandidates = lines.map(p => ({ path: p, kb: 0 }));
+    renderScanList('emptyResult', emptyCandidates, 'btnDeleteEmpty', 'No empty folders found ✓');
+  });
+});
+document.getElementById('btnDeleteEmpty').addEventListener('click', async function(){
+  await deleteSelected(this, 'emptyResult');
+});
+
+// ===================== 4. log files =====================
+let logCandidates = [];
+document.getElementById('btnScanLogs').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const scope = document.getElementById('logScope').value.trim();
+    if (!isSafePath(scope)) { alert('Invalid or too broad a path — give a specific subfolder.'); return; }
+    const cmd = 'find ' + shQuote(scope) +
+      ' -type f \\( -iname "*.log" -o -iname "*.log.*" -o -iname "*.trace" -o -iname "crash*.txt" \\) ' +
+      '-exec sh -c \'echo "$1|$(stat -c %s "$1" 2>/dev/null)"\' _ {} \\;';
+    const res = runShell(cmd, 90);
+    const lines = (res.stdout||'').split('\n').filter(Boolean);
+    logCandidates = [];
+    for (const line of lines){
+      const idx = line.lastIndexOf('|');
+      if (idx < 0) continue;
+      const path = line.slice(0, idx);
+      const bytes = parseInt(line.slice(idx+1)) || 0;
+      if (isSafePath(path)) logCandidates.push({ path, kb: Math.round(bytes/1024) });
+    }
+    renderScanList('logResult', logCandidates, 'btnDeleteLogs', 'No log files found ✓');
+  });
+});
+document.getElementById('btnDeleteLogs').addEventListener('click', async function(){
+  await deleteSelected(this, 'logResult');
+});
+
+// ===================== 5. duplicates =====================
+let dupGroups = []; // [{hash, files:[{path, kb}]}]
+const DUP_FILE_CAP = 1200; // hard cap so one scan can never run unbounded / freeze the UI for minutes
+document.getElementById('btnScanDup').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const scope = document.getElementById('dupScope').value.trim();
+    if (!isSafePath(scope)) { alert('Invalid or too broad a path — give a specific subfolder.'); return; }
+    const box = document.getElementById('dupResult');
+    box.style.display = 'block';
+    box.innerHTML = '<div class="result-summary">Scanning (up to ' + DUP_FILE_CAP + ' files)… a few seconds to about a minute.</div>';
+
+    // single pass: hash + size together, capped by `head`, so this can never run unbounded
+    const cmd = 'find ' + shQuote(scope) + ' -type f 2>/dev/null | head -n ' + DUP_FILE_CAP +
+      ' | while IFS= read -r f; do h=$(md5sum "$f" 2>/dev/null | cut -d" " -f1); ' +
+      's=$(stat -c %s "$f" 2>/dev/null); echo "$h|$s|$f"; done';
+    const res = runShell(cmd, 100); // hard ceiling — if scope is too big, this fails fast instead of hanging
+
+    if (res.timedOut) {
+      box.innerHTML = '<div class="result-summary err-inline">Scan took too long and was stopped. Narrow the scope (e.g. a specific subfolder, not all of Download).</div>';
+      return;
+    }
+
+    const byHash = {};
+    let fileCount = 0;
+    (res.stdout||'').split('\n').filter(Boolean).forEach(line => {
+      const parts = line.split('|');
+      if (parts.length < 3) return;
+      const hash = parts[0], kb = Math.round((parseInt(parts[1])||0)/1024);
+      const path = parts.slice(2).join('|'); // path may itself contain '|', rejoin the rest
+      if (!hash || !isSafePath(path)) return;
+      fileCount++;
+      (byHash[hash] = byHash[hash] || []).push({ path, kb });
+    });
+
+    dupGroups = Object.entries(byHash)
+      .filter(([, files]) => files.length > 1)
+      .map(([hash, files]) => ({ hash, files }));
+
+    renderDupGroups(fileCount >= DUP_FILE_CAP);
+  });
+});
+document.getElementById('btnDeleteDup').addEventListener('click', async function(){
+  const btn = this;
+  const selected = [];
+  document.querySelectorAll('#dupResult input[type=checkbox]:checked').forEach(cb => selected.push(cb.dataset.path));
+  if (!selected.length) { alert('No files selected for deletion.'); return; }
+  if (!confirm(selected.length + ' files will be deleted. This cannot be undone.')) return;
+  await withBusy(btn, async () => {
+    const cmd = 'rm -rf -- ' + selected.map(shQuote).join(' ');
+    const res = runShell(cmd, 60);
+    document.getElementById('dupResult').innerHTML =
+      '<div class="result-summary">' + (res.ok ? '✓ ' + selected.length + ' files deleted.' : 'Error: ' + res.stderr) + '</div>';
+    btn.style.display = 'none';
+  });
+});
+
+function renderDupGroups(capped){
+  const box = document.getElementById('dupResult');
+  box.style.display = 'block';
+  const delBtn = document.getElementById('btnDeleteDup');
+  const capNote = capped ? ' — ⚠ scan capped at ' + DUP_FILE_CAP + ' files, narrow the scope to see everything' : '';
+  if (!dupGroups.length) {
+    box.innerHTML = '<div class="empty-note">No duplicate files found ✓' + capNote + '</div>';
+    delBtn.style.display = 'none';
+    return;
+  }
+  let totalReclaim = 0;
+  let html = '<div class="result-list">';
+  dupGroups.forEach((g, gi) => {
+    html += '<div class="dup-group"><div class="grouplabel">Group ' + (gi+1) + ' — ' + g.files.length + ' copies</div>';
+    g.files.forEach((f, fi) => {
+      const isDupe = fi > 0; // keep first by default
+      if (isDupe) totalReclaim += f.kb;
+      html += '<div class="result-item">' +
+        '<input type="checkbox" data-path="' + f.path.replace(/"/g,'&quot;') + '" ' + (isDupe ? 'checked' : '') + '>' +
+        '<span class="path">' + (fi===0 ? '📌 ' : '') + f.path + '</span>' +
+        '<span class="size">' + fmtSize(f.kb) + '</span></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  box.innerHTML = '<div class="result-summary">' + dupGroups.length + ' duplicate groups — current selection frees about ' + fmtSize(totalReclaim) + ' (the first 📌 copy in each group is kept by default)' + capNote + '</div>' + html;
+  delBtn.style.display = 'inline-flex';
+}
+
+// ===================== 6. kill background apps =====================
+document.getElementById('btnKillApps').addEventListener('click', async function(){
+  const excludeRaw = document.getElementById('killExclude').value;
+  const excludes = new Set(excludeRaw.split(',').map(s=>s.trim()).filter(Boolean));
+  if (!confirm('Force-stop every third-party app (except excluded ones)?')) return;
+  await withBusy(this, async () => {
+    const pkgs = runShell('pm list packages -3 | sed "s/^package://"', 30);
+    const list = (pkgs.stdout||'').split('\n').map(s=>s.trim()).filter(p => p && !excludes.has(p));
+    const box = document.getElementById('killResult');
+    box.style.display = 'block';
+    if (!list.length) { box.innerHTML = '<div class="result-summary">No third-party apps found to kill.</div>'; return; }
+    // fire-and-forget: run the whole loop backgrounded on-device (trailing &) so this call
+    // returns almost instantly instead of blocking the UI for the time it takes to force-stop
+    // every single package one by one (this was the cause of the multi-minute freeze).
+    const loop = list.map(p => 'am force-stop ' + shQuote(p)).join('; ');
+    const cmd = '( ' + loop + ' ) >/dev/null 2>&1 &';
+    const res = runShell(cmd, 15);
+    box.innerHTML = '<div class="result-summary">' +
+      (res.ok !== false
+        ? '✓ Request sent — ' + list.length + ' apps will be force-stopped in the background (takes a few seconds, no need to wait).'
+        : 'Failed to send request: ' + res.stderr) +
+      '</div>';
+  });
+});
+
+// ===================== shared render/delete for simple lists =====================
+function renderScanList(boxId, items, delBtnId, emptyMsg){
+  const box = document.getElementById(boxId);
+  const delBtn = document.getElementById(delBtnId);
+  box.style.display = 'block';
+  if (!items.length) {
+    box.innerHTML = '<div class="empty-note">' + emptyMsg + '</div>';
+    delBtn.style.display = 'none';
+    return;
+  }
+  const totalKb = items.reduce((s,i)=>s+(i.kb||0),0);
+  let html = '<div class="result-summary">' + items.length + ' items found — about ' + fmtSize(totalKb) + ' total</div><div class="result-list">';
+  items.forEach(it => {
+    html += '<div class="result-item">' +
+      '<input type="checkbox" data-path="' + it.path.replace(/"/g,'&quot;') + '" checked>' +
+      '<span class="path">' + it.path + '</span>' +
+      (it.kb ? '<span class="size">' + fmtSize(it.kb) + '</span>' : '') +
+      '</div>';
+  });
+  html += '</div>';
+  box.innerHTML = html;
+  delBtn.style.display = 'inline-flex';
+}
+
+async function deleteSelected(btn, boxId){
+  const box = document.getElementById(boxId);
+  const selected = [];
+  box.querySelectorAll('input[type=checkbox]:checked').forEach(cb => selected.push(cb.dataset.path));
+  const safeSelected = selected.filter(isSafePath);
+  if (!safeSelected.length) { alert('No items selected for deletion.'); return; }
+  if (!confirm(safeSelected.length + ' items will be deleted. This cannot be undone.')) return;
+  await withBusy(btn, async () => {
+    const cmd = 'rm -rf -- ' + safeSelected.map(shQuote).join(' ');
+    const res = runShell(cmd, 90);
+    box.innerHTML = '<div class="result-summary">' +
+      (res.ok ? '✓ ' + safeSelected.length + ' items deleted.' : 'Error: ' + (res.stderr || 'unknown')) +
+      '</div>';
+    btn.style.display = 'none';
+  });
+}
+
+// ===================== root detection =====================
+let isRoot = false;
+function checkRoot(){
+  try {
+    const idRes = JSON.parse(window.Shizuku.exec('id -u'));
+    isRoot = idRes.ok && idRes.stdout.trim() === '0';
+    const el = document.getElementById('rootStatus');
+    if (isRoot) {
+      el.textContent = '🔓 root detected';
+      el.style.display = 'inline-block';
+      document.getElementById('rootGateCard').style.display = 'block';
+    }
+  } catch(e){ /* non-root or exec unavailable — silently skip, no root UI shown */ }
+}
+
+document.getElementById('btnUnlockRoot').addEventListener('click', function(){
+  const ok = confirm(
+    'This section uses direct root access inside internal system folders (/data).\n\n' +
+    '• Only targets cache, diagnostic logs, and data from apps that are truly uninstalled\n' +
+    '• Never wipes the full data of a currently-installed app or a critical system file\n' +
+    '• You still see and confirm every list before anything is deleted\n\n' +
+    'That said, since this section reaches deeper than usual, you take final responsibility for it.\n\nContinue?'
+  );
+  if (!ok) return;
+  document.getElementById('rootGateCard').style.display = 'none';
+  document.getElementById('rootSection').style.display = 'block';
+});
+
+// regex: looks like a real android package id (reverse-domain, e.g. com.example.app)
+const PKG_ID_RE = /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/;
+
+// ===================== ROOT: corpse finder =====================
+let corpseCandidates = [];
+document.getElementById('btnScanCorpse').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const pkgs = runShell('pm list packages | sed "s/^package://"', 30);
+    const installed = new Set((pkgs.stdout||'').split('\n').map(s=>s.trim()).filter(Boolean));
+
+    const dirs = runShell(
+      'for d in /data/user/0/*/ /data/data/*/; do [ -d "$d" ] && echo "$d|$(du -sk "$d" 2>/dev/null | cut -f1)"; done',
+      90
+    );
+    const lines = (dirs.stdout||'').split('\n').filter(Boolean);
+    const seen = new Set();
+    corpseCandidates = [];
+    for (const line of lines){
+      const [path, kb] = line.split('|');
+      if (!path) continue;
+      const clean = path.replace(/\/+$/, '');
+      const name = clean.split('/').pop();
+      // must look like a real package id, must not be currently installed, must be a safe path, dedupe by name
+      if (PKG_ID_RE.test(name) && !installed.has(name) && isSafePath(clean) && !seen.has(name)) {
+        seen.add(name);
+        corpseCandidates.push({ path: clean, kb: parseInt(kb)||0 });
+      }
+    }
+    renderScanList('corpseResult', corpseCandidates, 'btnDeleteCorpse', 'No orphaned data found inside /data ✓');
+  });
+});
+document.getElementById('btnDeleteCorpse').addEventListener('click', async function(){
+  await deleteSelected(this, 'corpseResult');
+});
+
+// ===================== ROOT: precise per-app cache =====================
+document.getElementById('btnScanAppCache').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const res = runShell(
+      'for d in /data/user/0/*/; do p=$(basename "$d"); ' +
+      'c=$(du -sk "$d/cache" 2>/dev/null | cut -f1); cc=$(du -sk "$d/code_cache" 2>/dev/null | cut -f1); ' +
+      'echo "$p|$((${c:-0}+${cc:-0}))"; done',
+      90
+    );
+    const lines = (res.stdout||'').split('\n').filter(Boolean);
+    let items = [];
+    for (const line of lines){
+      const [pkg, kb] = line.split('|');
+      const kbNum = parseInt(kb)||0;
+      if (pkg && PKG_ID_RE.test(pkg) && kbNum > 0) items.push({ pkg, kb: kbNum });
+    }
+    items.sort((a,b)=>b.kb-a.kb);
+    items = items.slice(0, 30);
+
+    const box = document.getElementById('appCacheResult');
+    box.style.display = 'block';
+    if (!items.length) { box.innerHTML = '<div class="empty-note">No significant cache found ✓</div>'; return; }
+    let html = '<div class="result-summary">Top 30 apps by cache size — pick and clear</div><div class="result-list">';
+    items.forEach(it => {
+      html += '<div class="result-item">' +
+        '<input type="checkbox" data-pkg="' + it.pkg + '">' +
+        '<span class="path">' + it.pkg + '</span>' +
+        '<span class="size">' + fmtSize(it.kb) + '</span></div>';
+    });
+    html += '</div><div class="row" style="margin-top:10px;"><button class="btn-danger" id="btnClearAppCache">Clear cache for selected apps</button></div>';
+    box.innerHTML = html;
+
+    document.getElementById('btnClearAppCache').addEventListener('click', async function(){
+      const pkgs = [];
+      box.querySelectorAll('input[type=checkbox]:checked').forEach(cb => pkgs.push(cb.dataset.pkg));
+      if (!pkgs.length) { alert('No apps selected.'); return; }
+      if (!confirm('Clear cache for ' + pkgs.length + ' apps?')) return;
+      await withBusy(this, async () => {
+        const cmd = pkgs.map(p =>
+          'find /data/user/0/' + shQuote(p) + '/cache -mindepth 1 -exec rm -rf -- {} + 2>/dev/null; ' +
+          'find /data/user/0/' + shQuote(p) + '/code_cache -mindepth 1 -exec rm -rf -- {} + 2>/dev/null'
+        ).join('; ');
+        runShell(cmd, 90);
+        box.innerHTML = '<div class="result-summary">✓ Cache cleared for ' + pkgs.length + ' apps.</div>';
+      });
+    });
+  });
+});
+
+// ===================== ROOT: diagnostic logs =====================
+document.getElementById('btnCleanDiagLogs').addEventListener('click', async function(){
+  await withBusy(this, async () => {
+    const cmd = 'find /data/anr /data/tombstones -mindepth 1 -type f -exec rm -f -- {} + 2>/dev/null; echo done';
+    const res = runShell(cmd, 60);
+    document.getElementById('diagResult').style.display = 'block';
+    document.getElementById('diagResult').innerHTML =
+      '<div class="result-summary">' + (res.ok ? '✓ ANR/Tombstone logs cleared.' : 'Error: ' + res.stderr) + '</div>';
+  });
+});
+
+// init
+checkBridge();
+checkRoot();
+</script>
+</body>
+</html>
