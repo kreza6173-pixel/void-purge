@@ -3,16 +3,6 @@
 Advanced cleaner: app cache, orphaned files from uninstalled apps, empty folders, log files, duplicate files, and a one-tap background app killer.
 Architecture: everything is **scanned** first, previewed, and only deleted after explicit confirmation — no destructive operation ever runs blind (except cache trimming, which is inherently safe since it uses Android's own official mechanism).
 
-## Local testing before publishing
-
-```bash
-cd void-purge-en
-zip -r ../void-purge-en.zip .
-```
-Then in Shevery → ADB Modules → Install ZIP → pick this file.
-
-**Requirement:** module access mode must be **Full access**, or in **Custom** mode the **WebUI shell bridge** option enabled. Without this, a red warning appears at the top of the WebUI and no button will work (intentional — surfaces the problem clearly instead of failing silently).
-
 ## Pre-publish checklist
 
 - [✅] Bridge status badge at the top shows ✓ green
