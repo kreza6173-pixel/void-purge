@@ -3,6 +3,8 @@
 Advanced cleaner: app cache, orphaned files from uninstalled apps, empty folders, log files, duplicate files, and a one-tap background app killer.
 Architecture: everything is **scanned** first, previewed, and only deleted after explicit confirmation — no destructive operation ever runs blind (except cache trimming, which is inherently safe since it uses Android's own official mechanism).
 
+<img width="576" height="1280" alt="Image" src="https://github.com/user-attachments/assets/d1c4e45a-6846-402b-9605-83fad4b8fb54" />
+
 ## Pre-publish checklist
 
 - [✅] Bridge status badge at the top shows ✓ green
